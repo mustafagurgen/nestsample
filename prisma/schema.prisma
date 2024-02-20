@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        Int     @id @default(autoincrement())
+
+  firstname  String?
+  lastname   String?
+  email      String  @unique
+  pass       String?
+
+  roles     UserRole[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stores Store[]
+  books Book[]
+
+  @@map("users")
+}
+
+model UserRole {
+  userId  Int
+  roleId  Int
+
+  user     User  @relation(fields: [userId], references: [id])
+  role     Role @relation(fields: [roleId], references: [id])
+
+  // @@map("user_roles")
+
+  @@id([userId,roleId])
+}
+
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  title       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rel UserRole[]
+
+  @@map("roles")
+}
+
+model Store {
+  id              Int     @id @default(autoincrement())
+  storeTitle  String
+  storeDescription    String?
+  storeLink          String?
+  userId          Int
+  user            User   @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  storeRel  StoreBookRelation[]
+
+  @@map("stores")
+
+}
+
+model Book {
+  id              Int     @id @default(autoincrement())
+  bookTitle  String
+  bookDescription    String?
+  bookAuthor          String
+  bookPublisher          String
+
+  userId          Int
+  user            User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookRel  StoreBookRelation[]
+
+  @@map("books")
+
+}
+
+model StoreBookRelation {
+
+  bookId Int
+  storeId Int
+
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  book    Book @relation(fields: [bookId], references: [id])
+  store Store  @relation(fields: [storeId], references: [id])
+
+  @@id([bookId,storeId])
+
+}
